@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello Queen</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: Consolas, monospace;
+  background: linear-gradient(to right, #ffb6c1, #ff69b4);
+  transition: background 2s ease;
+  overflow-x: hidden;
+}
+
+h1, p {
+  margin: 10px 0;
+  white-space: pre-wrap;
+}
+
+#nextBtn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-family: Consolas, monospace;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #ff69b4;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#nextBtn:hover {
+  background: #db7093;
+  transform: scale(1.05);
+}
+
+.typing {
+  border-right: 2px solid #333;
+  animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+  0% { border-color: transparent; }
+  50% { border-color: #333; }
+  100% { border-color: transparent; }
+}
+
+.leaf {
+  position: absolute;
+  top: -50px;
+  font-size: 24px;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(110vh) rotate(360deg); }
+}
+
+/* CAROUSEL */
+#galleryWrapper {
+  display: none;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 30px;
+}
+
+#carousel {
+  display: flex;
+  gap: 20px;
+  animation: scrollLoop 20s linear infinite;
+}
+
+.photo {
+  width: 220px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+  animation: floating 4s ease-in-out infinite;
+}
+
+@keyframes scrollLoop {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes floating {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="title"></h1>
+<p id="text"></p>
+<button id="nextBtn">Next</button>
+
+<div id="galleryWrapper">
+  <div id="carousel">
+    <img src="pict/photobooth.png" class="photo">
+    <img src="pict/photobooth2.png" class="photo">
+    <img src="pict/photobooth3.png" class="photo">
+
+    <img src="pict/photobooth.png" class="photo">
+    <img src="pict/photobooth2.png" class="photo">
+    <img src="pict/photobooth3.png" class="photo">
+  </div>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="pict/music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+/* BACKGROUND */
+const gradients = [
+  "linear-gradient(to right, #ffb6c1, #ff69b4)",
+  "linear-gradient(to right, #ff69b4, #db7093)",
+  "linear-gradient(to right, #db7093, #ff1493)",
+  "linear-gradient(to right, #ff1493, #c71585)",
+  "linear-gradient(to right, #c71585, #e75480)",
+  "linear-gradient(to right, #e75480, #ff0000)",
+  "linear-gradient(to right, #ff0000, #800080)",
+  "linear-gradient(to right, #800080, #ffb6c1)"
+];
+
+let gIndex = 0;
+setInterval(() => {
+  document.body.style.background = gradients[gIndex];
+  gIndex = (gIndex + 1) % gradients.length;
+}, 4000);
+
+/* SLIDES */
+const slides = [
+  { h1: "Hi Babe, were you waiting for this?", p: "Click the button below to continue." },
+  { h1: "Hello, my sweet girl!", p: "Thank you for being born into this world." },
+  { h1: "I felt like my world was stuck", p: "But someone came and changed everything." },
+  { h1: "That someone is you", p: "You made my world colorful again." },
+  { h1: "Thank you for always being here", p: "Let’s build the future together." },
+  { h1: "Happy Birth & Valentine’s Day!", p: "These are our beautiful memories 💕" }
+];
+
+let current = 0;
+const titleEl = document.getElementById("title");
+const textEl = document.getElementById("text");
+const btn = document.getElementById("nextBtn");
+const galleryWrapper = document.getElementById("galleryWrapper");
+
+function typeText(element, text, callback) {
+  element.innerHTML = "";
+  let i = 0;
+  const cursor = document.createElement("span");
+  cursor.classList.add("typing");
+  element.appendChild(cursor);
+
+  const interval = setInterval(() => {
+    cursor.before(text.charAt(i));
+    i++;
+    if (i === text.length) {
+      clearInterval(interval);
+      cursor.remove();
+      if (callback) callback();
+    }
+  }, 40);
+}
+
+function showSlide(index) {
+  galleryWrapper.style.display = "none";
+  btn.style.display = "inline-block";
+
+  typeText(titleEl, slides[index].h1, () => {
+    typeText(textEl, slides[index].p, () => {
+      if (index === slides.length - 1) {
+        galleryWrapper.style.display = "block";
+        btn.style.display = "none";
+      }
+    });
+  });
+}
+
+btn.addEventListener("click", () => {
+  if (current < slides.length - 1) {
+    current++;
+    showSlide(current);
+  }
+});
+
+showSlide(current);
+
+/* FALLING SYMBOLS */
+const symbols = ["🍂","🍁","🍃","💖","💕"];
+function createLeaf() {
+  const leaf = document.createElement("div");
+  leaf.classList.add("leaf");
+  leaf.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+  leaf.style.left = Math.random() * window.innerWidth + "px";
+  leaf.style.animationDuration = (5 + Math.random() * 5) + "s";
+  document.body.appendChild(leaf);
+  setTimeout(() => leaf.remove(), 10000);
+}
+setInterval(createLeaf, 500);
+
+/* MUSIC FIX */
+const music = document.getElementById("bgMusic");
+document.body.addEventListener("click", () => {
+  music.play().catch(() => {});
+}, { once: true });
+
+});
+</script>
+
+</body>
+</html>
